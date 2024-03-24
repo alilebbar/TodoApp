@@ -7,43 +7,25 @@ import DoneIcon from "@mui/icons-material/Done";
 import EditIcon from "@mui/icons-material/Edit";
 import ClearIcon from "@mui/icons-material/Clear";
 import { TodoContext } from "./TodoContext";
-import { useContext, useState } from "react";
-import PopupSuppression from "./PopupSuppression";
-import PopupUpdate from "./PopupUpdate";
+import { useContext } from "react";
 import { useSnackBarContext } from "./SnackBarContext";
 
-export default function Todo({ todo, valueButtonToogle }) {
+export default function Todo({
+  todo,
+  valueButtonToogle,
+  openDialogSup,
+  openDialogMod,
+}) {
   const { todosState, setTodosState } = useContext(TodoContext);
   const { openSnack } = useSnackBarContext();
-  const [openTodo, setOpenTodo] = useState(false);
-  const [openTodoM, setOpenTodoM] = useState(false);
 
-  function openPopupModifier() {
-    setOpenTodoM(true);
+  function openDialogModHandel() {
+    openDialogMod(todo);
   }
-  function openFlse() {
-    setOpenTodo(false);
+  function openDialogSupHandel() {
+    openDialogSup(todo);
   }
-  function openFlsM() {
-    setOpenTodoM(false);
-  }
-  function OpenDialogSuppression() {
-    if (openTodo) {
-      return <PopupSuppression id={todo.id} setopenTodo={openFlse} />;
-    } else {
-      return <></>;
-    }
-  }
-  function OpenDialogUpdate() {
-    if (openTodoM) {
-      return <PopupUpdate todo={todo} setopenTodoM={openFlsM} />;
-    } else {
-      return <></>;
-    }
-  }
-  function openPopup() {
-    setOpenTodo(true);
-  }
+
   function handelDejaFait() {
     const newTodo = todosState.map((t) => {
       if (todo.id === t.id) {
@@ -108,7 +90,7 @@ export default function Todo({ todo, valueButtonToogle }) {
                 className="btnEffectTodo"
                 aria-label="Edit"
                 size="small"
-                onClick={openPopupModifier}
+                onClick={openDialogModHandel}
               >
                 <EditIcon style={{ color: "white" }} />
               </IconButton>
@@ -116,7 +98,7 @@ export default function Todo({ todo, valueButtonToogle }) {
                 className="btnEffectTodo"
                 aria-label="Delete"
                 size="small"
-                onClick={openPopup}
+                onClick={openDialogSupHandel}
               >
                 <ClearIcon style={{ color: "white" }} />
               </IconButton>
@@ -125,12 +107,6 @@ export default function Todo({ todo, valueButtonToogle }) {
         </CardContent>
       </Card>
       {/*construitre le blouque des objectif */}
-      {/*le popup pour Supprimer*/}
-      <OpenDialogSuppression />
-      {/*le popup pour Supprimer*/}
-      {/*le popup pour Modifier */}
-      <OpenDialogUpdate />
-      {/*le popup pour Modifier */}
     </>
   );
 }

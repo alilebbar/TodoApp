@@ -18,13 +18,25 @@ import { TodoContext } from "./TodoContext";
 import { useContext, useEffect, useMemo } from "react";
 import topPicture from "./logo/TodoObjectif-logos_white.png";
 import { useSnackBarContext } from "./SnackBarContext";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 
 export default function TodoList() {
   const { openSnack } = useSnackBarContext();
   const { todosState, setTodosState } = useContext(TodoContext);
-
+  const [openDialogSupState, setOpenDialogSupState] = useState(false);
   let [inputTitle, setInputTitle] = useState("");
   let [valueButton, setValueButton] = useState("isNotComplited");
+  let [todoIdDelete, setTodoIdDelete] = useState(null);
+  let [todoIdUpdate, setTodoIdUpdate] = useState("");
+  const [openModifier, setOpenModifier] = useState(false);
+  const [inputTodo, setInputTodo] = useState({
+    title: "",
+    detail: "",
+  });
 
   let todoChangable = todosState;
   let todoIsCompleted = useMemo(() => {
@@ -44,8 +56,63 @@ export default function TodoList() {
       todoChangable = todoIsNotCopleted;
     }
   }
+
+  // handel open dialog suppression
+
+  function openDialogSup(todo) {
+    setTodoIdDelete(todo.id);
+    setOpenDialogSupState(true);
+  }
+  function closeDialogSup() {
+    setOpenDialogSupState(false);
+  }
+  function handleDelete() {
+    let id = todoIdDelete;
+    const newTodo = todosState.filter((t) => id !== t.id);
+    setTodosState(newTodo);
+    localStorage.setItem("todos", JSON.stringify(newTodo));
+    openSnack("Suppression Réussie!");
+    closeDialogSup();
+  }
+  // close handel open dialog suppression
+
+  // Open Handel Dialog Modification
+  function openDialogMod(todo) {
+    setTodoIdUpdate(todo);
+    setInputTodo({ title: todo.title, detail: todo.detail });
+    setOpenModifier(true);
+  }
+  function handleCloseModifier() {
+    setOpenModifier(false);
+  }
+  function handelClickModifier() {
+    const newTodo = todosState.map((t) => {
+      if (t.id === todoIdUpdate.id) {
+        return {
+          ...t,
+          title: inputTodo.title,
+          detail: inputTodo.detail,
+        };
+      } else {
+        return t;
+      }
+    });
+    setTodosState(newTodo);
+    localStorage.setItem("todos", JSON.stringify(newTodo));
+    openSnack("Modification Réussi!");
+    handleCloseModifier();
+  }
+  // Close Handel Dialog Modification
   const todos = todoChangable.map((todo) => {
-    return <Todo todo={todo} key={todo.id} valueButtonToogle={valueButton} />;
+    return (
+      <Todo
+        todo={todo}
+        key={todo.id}
+        valueButtonToogle={valueButton}
+        openDialogSup={openDialogSup}
+        openDialogMod={openDialogMod}
+      />
+    );
   });
 
   function changeButton(e) {
@@ -74,6 +141,68 @@ export default function TodoList() {
 
   return (
     <>
+      {/*le popup de suppression */}
+      <Dialog
+        open={openDialogSupState}
+        onClose={closeDialogSup}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirmation suppression"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Voulez vous vraimment supprimer ce Objectif ?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDialogSup}>Annuler</Button>
+          <Button onClick={handleDelete} autoFocus>
+            Valider
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/*le popup de suppression */}
+      {/*le popup de Modification */}
+      <Dialog open={openModifier} onClose={handleCloseModifier}>
+        <DialogTitle>Modifier</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            required
+            value={inputTodo.title}
+            margin="dense"
+            name="Title"
+            type="Text"
+            fullWidth
+            variant="standard"
+            onChange={(e) => {
+              setInputTodo({ ...inputTodo, title: e.target.value });
+            }}
+          />
+          <TextField
+            autoFocus
+            required
+            placeholder="Introduire des detailles "
+            value={inputTodo.detail}
+            margin="dense"
+            name="Detail"
+            type="Text"
+            fullWidth
+            variant="standard"
+            onChange={(e) => {
+              setInputTodo({ ...inputTodo, detail: e.target.value });
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModifier}>Annuler</Button>
+          <Button onClick={handelClickModifier}>Modifier</Button>
+        </DialogActions>
+      </Dialog>
+      {/*le popup de Modification */}
+
       <img src={topPicture} alt="topPicture" style={{ maxHeight: "15vh" }} />
 
       <Box>

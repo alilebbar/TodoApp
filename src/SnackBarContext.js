@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import { useState } from "react";
 import SnackBar from "./SnackBar";
 
-export const SnackBarContext = createContext({});
+const SnackBarContext = createContext({});
 
 export const SnackBarProvider = ({ children }) => {
   const [openSnackBar, setOpenSnackBar] = useState(false);
