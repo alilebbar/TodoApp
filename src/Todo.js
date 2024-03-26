@@ -6,9 +6,8 @@ import IconButton from "@mui/material/IconButton";
 import DoneIcon from "@mui/icons-material/Done";
 import EditIcon from "@mui/icons-material/Edit";
 import ClearIcon from "@mui/icons-material/Clear";
-import { TodoContext } from "./TodoContext";
-import { useContext } from "react";
 import { useSnackBarContext } from "./SnackBarContext";
+import { useTodoReducer } from "./TodoContext";
 
 export default function Todo({
   todo,
@@ -16,7 +15,7 @@ export default function Todo({
   openDialogSup,
   openDialogMod,
 }) {
-  const { todosState, setTodosState } = useContext(TodoContext);
+  const { dispatch } = useTodoReducer();
   const { openSnack } = useSnackBarContext();
 
   function openDialogModHandel() {
@@ -27,15 +26,9 @@ export default function Todo({
   }
 
   function handelDejaFait() {
-    const newTodo = todosState.map((t) => {
-      if (todo.id === t.id) {
-        t.isCompleted = !t.isCompleted;
-      }
-      return t;
-    });
-    setTodosState(newTodo);
-    localStorage.setItem("todos", JSON.stringify(newTodo));
-    if (todo.isCompleted) openSnack("Bravo Objectif Atteint!");
+    dispatch({ type: "val", payload: todo });
+    console.log(todo.isCompleted);
+    if (!todo.isCompleted) openSnack("Bravo Objectif Atteint!");
   }
 
   return (

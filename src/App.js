@@ -1,12 +1,10 @@
 import "./App.css";
 import TodoList from "./TodoList";
-import { TodoContext } from "./TodoContext";
-import { useState } from "react";
+
 import { createTheme } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
 import { SnackBarProvider } from "./SnackBarContext";
-
-const todoListInfo = [];
+import TodoProvider from "./TodoContext";
 
 const theme = createTheme({
   palette: {
@@ -16,17 +14,15 @@ const theme = createTheme({
   },
 });
 function App() {
-  const [todosState, setTodosState] = useState(todoListInfo);
-
   return (
     <ThemeProvider theme={theme}>
-      <SnackBarProvider>
-        <div className="App">
-          <TodoContext.Provider value={{ todosState, setTodosState }}>
+      <TodoProvider>
+        <SnackBarProvider>
+          <div className="App">
             <TodoList />
-          </TodoContext.Provider>
-        </div>
-      </SnackBarProvider>
+          </div>
+        </SnackBarProvider>
+      </TodoProvider>
     </ThemeProvider>
   );
 }

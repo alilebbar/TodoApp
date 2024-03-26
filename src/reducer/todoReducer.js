@@ -1,22 +1,48 @@
 import { v4 as uuidv4 } from "uuid";
-export default function reducer(currentTodos, action) {
+export default function todoReducer(currentResult, action) {
   switch (action.type) {
-    case "added": {
+    case "add": {
       const newTodo = {
         id: uuidv4(),
-        title: action.payload.title,
+        title: action.payload.newTitle,
         detail: "",
         isCompleted: false,
       };
-      const updateTodo = [...currentTodos, newTodo];
-
+      const updateTodo = [...currentResult, newTodo];
       localStorage.setItem("todos", JSON.stringify(updateTodo));
       return updateTodo;
     }
-    case "verified": {
-      const newTodo = currentTodos.map((t) => {
+
+    case "supp": {
+      let id = action.payload.id;
+      const newTodo = currentResult.filter((t) => id !== t.id);
+      localStorage.setItem("todos", JSON.stringify(newTodo));
+      return newTodo;
+    }
+    case "upd": {
+      const newTodo = currentResult.map((t) => {
+        if (t.id === action.payload.id) {
+          return {
+            ...t,
+            title: action.payload.title,
+            detail: action.payload.detail,
+          };
+        } else {
+          return t;
+        }
+      });
+      localStorage.setItem("todos", JSON.stringify(newTodo));
+      return newTodo;
+    }
+
+    case "val": {
+      const newTodo = currentResult.map((t) => {
         if (action.payload.id === t.id) {
-          t.isCompleted = !t.isCompleted;
+          const updateTodo = {
+            ...t,
+            isCompleted: !t.isCompleted,
+          };
+          return updateTodo;
         }
         return t;
       });
@@ -24,12 +50,12 @@ export default function reducer(currentTodos, action) {
       return newTodo;
     }
 
-    case "reload": {
+    case "get": {
       const updateTodo = JSON.parse(localStorage.getItem("todos")) ?? [];
       return updateTodo;
     }
-    default: {
-      throw new Error("Action inatrouvable" + action.type);
-    }
+
+    default:
+      throw Error("Action Type Introuvable" + action.type);
   }
 }

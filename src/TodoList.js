@@ -12,10 +12,8 @@ import Todo from "./Todo";
 import Grid from "@mui/material/Unstable_Grid2";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import TextField from "@mui/material/TextField";
-import { v4 as uuidv4 } from "uuid";
 import { useState } from "react";
-import { TodoContext } from "./TodoContext";
-import { useContext, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import topPicture from "./logo/TodoObjectif-logos_white.png";
 import { useSnackBarContext } from "./SnackBarContext";
 import Dialog from "@mui/material/Dialog";
@@ -23,10 +21,11 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { useTodoReducer } from "./TodoContext";
 
 export default function TodoList() {
   const { openSnack } = useSnackBarContext();
-  const { todosState, setTodosState } = useContext(TodoContext);
+  const { todosState, dispatch } = useTodoReducer();
   const [openDialogSupState, setOpenDialogSupState] = useState(false);
   let [inputTitle, setInputTitle] = useState("");
   let [valueButton, setValueButton] = useState("isNotComplited");
@@ -38,6 +37,44 @@ export default function TodoList() {
     detail: "",
   });
 
+  // handel open dialog suppression
+
+  function openDialogSup(todo) {
+    setTodoIdDelete(todo.id);
+    setOpenDialogSupState(true);
+  }
+  function closeDialogSup() {
+    setOpenDialogSupState(false);
+  }
+  function handleDelete() {
+    dispatch({ type: "supp", payload: { id: todoIdDelete } });
+    openSnack("Suppression Réussie!");
+    closeDialogSup();
+  }
+  // close handel open dialog suppression
+
+  // Open Handel Dialog Modification
+  function openDialogMod(todo) {
+    setTodoIdUpdate(todo);
+    setInputTodo({ title: todo.title, detail: todo.detail });
+    setOpenModifier(true);
+  }
+  function handleCloseModifier() {
+    setOpenModifier(false);
+  }
+  function handelClickModifier() {
+    dispatch({
+      type: "upd",
+      payload: {
+        id: todoIdUpdate.id,
+        title: inputTodo.title,
+        detail: inputTodo.detail,
+      },
+    });
+    openSnack("Modification Réussi!");
+    handleCloseModifier();
+  }
+  // Close Handel Dialog Modification
   let todoChangable = todosState;
   let todoIsCompleted = useMemo(() => {
     return todosState.filter((t) => {
@@ -57,52 +94,6 @@ export default function TodoList() {
     }
   }
 
-  // handel open dialog suppression
-
-  function openDialogSup(todo) {
-    setTodoIdDelete(todo.id);
-    setOpenDialogSupState(true);
-  }
-  function closeDialogSup() {
-    setOpenDialogSupState(false);
-  }
-  function handleDelete() {
-    let id = todoIdDelete;
-    const newTodo = todosState.filter((t) => id !== t.id);
-    setTodosState(newTodo);
-    localStorage.setItem("todos", JSON.stringify(newTodo));
-    openSnack("Suppression Réussie!");
-    closeDialogSup();
-  }
-  // close handel open dialog suppression
-
-  // Open Handel Dialog Modification
-  function openDialogMod(todo) {
-    setTodoIdUpdate(todo);
-    setInputTodo({ title: todo.title, detail: todo.detail });
-    setOpenModifier(true);
-  }
-  function handleCloseModifier() {
-    setOpenModifier(false);
-  }
-  function handelClickModifier() {
-    const newTodo = todosState.map((t) => {
-      if (t.id === todoIdUpdate.id) {
-        return {
-          ...t,
-          title: inputTodo.title,
-          detail: inputTodo.detail,
-        };
-      } else {
-        return t;
-      }
-    });
-    setTodosState(newTodo);
-    localStorage.setItem("todos", JSON.stringify(newTodo));
-    openSnack("Modification Réussi!");
-    handleCloseModifier();
-  }
-  // Close Handel Dialog Modification
   const todos = todoChangable.map((todo) => {
     return (
       <Todo
@@ -120,22 +111,13 @@ export default function TodoList() {
   }
 
   function addTodo() {
-    const newTodo = {
-      id: uuidv4(),
-      title: inputTitle,
-      detail: "",
-      isCompleted: false,
-    };
-    const updateTodo = [...todosState, newTodo];
-    setTodosState(updateTodo);
-    localStorage.setItem("todos", JSON.stringify(updateTodo));
+    dispatch({ type: "add", payload: { newTitle: inputTitle } });
     setInputTitle("");
     openSnack("Objectif ajouté!");
   }
 
   useEffect(() => {
-    const updateTodo = JSON.parse(localStorage.getItem("todos")) ?? [];
-    setTodosState(updateTodo);
+    dispatch({ type: "get" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
